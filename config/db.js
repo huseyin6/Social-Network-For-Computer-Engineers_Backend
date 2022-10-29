@@ -5,6 +5,9 @@ const db = config.get('mongoURI');
 const connectDB = async () => {
   try {
     await mongoose.connect(db);
+    // , {
+    //  useCreateIndex: true, //useCreateIndex ve useNewUrlParser true eski versiyonlarda mı kaldı yein versiyonlarda kalkmış olabilir
+    // }
     console.log('MongoDB Connected!');
   } catch (error) {
     console.error(error.message);

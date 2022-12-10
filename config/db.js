@@ -7,7 +7,7 @@ const connectDB = async () => {
     await mongoose.connect(db);
     // , {
     //  useCreateIndex: true, //useCreateIndex ve useNewUrlParser true eski versiyonlarda mı kaldı yein versiyonlarda kalkmış olabilir
-    // }
+    //  useFindAndModify: false ?
     console.log('MongoDB Connected!');
   } catch (error) {
     console.error(error.message);

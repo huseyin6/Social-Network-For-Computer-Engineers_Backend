@@ -1,5 +1,5 @@
-const mongoose = require('mongooese');
-const Schema = mongooese.Schema;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 const PostSchema = new Schema({
   user: {
@@ -52,4 +52,4 @@ const PostSchema = new Schema({
   },
 });
 
-module.exports = Post = mongooese.model('post', Post);
+module.exports = Post = mongoose.model('post', PostSchema);

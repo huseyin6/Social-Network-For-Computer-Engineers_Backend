@@ -1,12 +1,21 @@
 const express = require('express');
 const connectDB = require('./config/db');
+const cors =require('cors');
 
 const app = express();
 
 // Connect DB
 connectDB();
 
+const corsOptions = {
+    origin:'*', 
+    credentials:true,            //access-control-allow-credentials:true
+    optionSuccessStatus:200
+}
+
 // Init middleware
+// Use cors
+app.use(cors(corsOptions));
 app.use(express.json({ extended: false }));
 
 app.get('/', (req, res) => res.send('API Running'));

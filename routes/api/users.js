@@ -71,7 +71,7 @@ router.post(
           if (error) {
             throw error;
           } else {
-            res.json({ token });
+            res.status(200).json({ token });
           }
         }
       );

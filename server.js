@@ -1,6 +1,6 @@
 const express = require('express');
 const connectDB = require('./config/db');
-const cors =require('cors');
+const cors = require('cors');
 
 const app = express();
 
@@ -8,10 +8,10 @@ const app = express();
 connectDB();
 
 const corsOptions = {
-    origin:'*', 
-    credentials:true,            //access-control-allow-credentials:true
-    optionSuccessStatus:200
-}
+  origin: '*',
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
 
 // Init middleware
 // Use cors

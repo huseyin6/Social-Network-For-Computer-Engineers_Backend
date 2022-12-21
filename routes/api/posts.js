@@ -31,7 +31,7 @@ router.post(
 
       const post = await newPost.save();
 
-      res.json(post);
+      res.status(200).json(post);
     } catch (error) {
       console.error(error.message);
       res.status(500).send('Server Error');
@@ -45,7 +45,7 @@ router.post(
 router.get('/', auth, async (req, res) => {
   try {
     const posts = await Post.find().sort({ date: -1 });
-    res.json(posts);
+    res.status(200).json(posts);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Server Error');
@@ -63,7 +63,7 @@ router.get('/:id', auth, async (req, res) => {
       return res.status(400).json({ msg: 'Post not found' });
     }
 
-    res.json(post);
+    res.status(200).json(post);
   } catch (error) {
     console.error(error.message);
     if (error.kind == 'ObjectId') {
@@ -91,7 +91,7 @@ router.delete('/:id', auth, async (req, res) => {
 
     await post.remove();
 
-    res.json({ msg: 'Post deleted' });
+    res.status(200).json({ msg: 'Post deleted' });
   } catch (error) {
     console.error(error.message);
     if (error.kind == 'ObjectId') {
@@ -120,7 +120,7 @@ router.put('/like/:id', auth, async (req, res) => {
 
     await post.save();
 
-    res.json(post.likes);
+    res.status(200).json(post.likes);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Server Error');
@@ -151,7 +151,7 @@ router.put('/unlike/:id', auth, async (req, res) => {
 
     await post.save();
 
-    res.json(post.likes);
+    res.status(200).json(post.likes);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Server Error');
@@ -185,7 +185,7 @@ router.post(
 
       await post.save();
 
-      res.json(post.comments);
+      res.status(200).json(post.comments);
     } catch (error) {
       console.error(error.message);
       res.status(500).send('Server Error');
@@ -224,7 +224,7 @@ router.delete('/comment/:id/:comment_id', auth, async (req, res) => {
 
     await post.save();
 
-    res.json(post.comments);
+    res.status(200).json(post.comments);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Server Error');

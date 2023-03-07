@@ -109,14 +109,26 @@ router.put('/like/:id', auth, async (req, res) => {
     const post = await Post.findById(req.params.id);
 
     // Check if the post has already been liked
+    //1-
     if (
-      post.likes.filter((like) => like.user.toString() == req.user.id).length >
-      0
+      post.likes.filter((like) => like.user.toString() == req.user.id).length = 1
     ) {
-      return res.status(400).json({ msg: 'Post already liked' });
+      const removeIndex = post.likes.map((like) => like.user.toString()).indexOf(req.user.id);
+      post.likes.splice(removeIndex, 1); //If it is liked,if you try to put new a like,remove the old one,basically remove like
     }
 
-    post.likes.unshift({ user: req.user.id });
+    //2-
+    if(
+      post.dislikes.filter((dislike) => dislike.user.toString() == req.user.id).length = 1
+    ) {
+      const removeIndex = post.dislikes.map((dislike) => dislike.user.toString()).indexOf(req.user.id);
+      post.dislikes.splice(removeIndex, 1); //If it is disliked,remove the dislike and like it
+      post.likes.unshift({ user: req.user.id });
+    }
+
+    //3-
+    //If you already have 0 likes then
+    post.likes.unshift({ user: req.user.id });//if post is not disliked either liked
 
     await post.save();
 
@@ -128,30 +140,37 @@ router.put('/like/:id', auth, async (req, res) => {
 });
 
 // @route   PUT api/posts/unlike/:id
-// @desc    Unlike a post
+// @desc    dislike a post
 // @access  Private
 router.put('/unlike/:id', auth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
 
     // Check if the post has already been liked
+    //1-
     if (
-      post.likes.filter((like) => like.user.toString() == req.user.id)
-        .length === 0
+      post.likes.filter((like) => like.user.toString() == req.user.id).length = 1
     ) {
-      return res.status(400).json({ msg: 'Post has not yet been liked' });
+      const removeIndex = post.likes.map((like) => like.user.toString()).indexOf(req.user.id);
+      post.likes.splice(removeIndex, 1); //If it is liked,remove the like
+      post.dislikes.unshift({user: req.user.id})//and dislike it
     }
 
-    // Get the remove index
-    const removeIndex = post.likes
-      .map((like) => like.user.toString())
-      .indexOf(req.user.id);
+    //If you already have dislike and try to press again
+    //2-
+    if(
+      post.dislikes.filter((dislike) => dislike.user.toString() == req.user.id).length = 1
+    ) {
+      const removeIndex = post.dislikes.map((dislike) => dislike.user.toString()).indexOf(req.user.id);
+      post.dislikes.splice(removeIndex, 1); //If it is already disliked
+    }
 
-    post.likes.splice(removeIndex, 1);
+    //3-
+    post.dislikes.unshift({ user: req.user.id }); // if post is not disliked either liked
 
     await post.save();
 
-    res.status(200).json(post.likes);
+    res.status(200).json(post.dislikes);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Server Error');

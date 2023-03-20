@@ -168,7 +168,7 @@ router.post(
   }
 );
 
-// @route   DELETE api/posts/comment/:id/:comment_id
+// @route   DELETE api/questions/comment/:id/:comment_id
 // @desc    Delete on a comment
 // @access  Private
 router.delete('/comment/:id/:comment_id', auth, async (req, res) => {
@@ -200,6 +200,26 @@ router.delete('/comment/:id/:comment_id', auth, async (req, res) => {
     await question.save();
 
     res.status(200).json(question.comments);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   GET api/questions/search/:key
+// @desc    Search question by description
+// @access  Private
+router.get('/search/:key', auth, async (req, res) => {
+  try {
+    const questions = await Question.find({
+      $or: [
+        {
+          description: { $regex: req.params.key, $options: 'si' },
+        },
+      ],
+    });
+
+    res.status(200).json(questions);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Server Error');

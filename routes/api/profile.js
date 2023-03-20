@@ -330,4 +330,61 @@ router.get('/github/:username', async (req, res) => {
   }
 });
 
+// @route   PUT api/profile/score/:id
+// @desc    Score an engineer
+// @access  Private
+router.put('/score/:id', auth, async (req, res) => {
+  try {
+    const profile = await Profile.findById(req.params.id);
+
+    // Check if the engineer has already been scored
+    if (
+      profile.scores.filter((score) => score.user.toString() == req.user.id)
+        .length > 0
+    ) {
+      const given_score_index = profile.scores
+        .map((index) => index.user.toString())
+        .indexOf(req.user.id);
+      // profile.scores.splice(removeIndex, 1);
+
+      return res.status(400).json({
+        msg: 'You have already scored this engineer',
+        givenScore: profile.scores.at(given_score_index).score,
+      });
+    } else {
+      const point = req.body.score;
+      profile.scores.unshift({ user: req.user.id, score: point });
+    }
+
+    await profile.save();
+    res.status(200).json(profile.scores);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   GET api/profile/score
+// @desc    Get score of engineer
+// @access  Public
+router.get('/score/:user_id', async (req, res) => {
+  try {
+    const profile = await Profile.findOne({
+      user: req.params.user_id,
+    });
+    if (!profile) {
+      return res.status(400).json({ msg: 'Profile not found' });
+    }
+
+    const given_scores = profile.scores.map((index) => index.score);
+    const sum = given_scores.reduce((a, b) => a + b, 0);
+    const avg = sum / given_scores.length || 0;
+
+    res.status(200).json({ score: avg });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 module.exports = router;

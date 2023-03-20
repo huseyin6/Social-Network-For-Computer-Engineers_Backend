@@ -9,6 +9,17 @@ const ProfileSchema = new mongoose.Schema({
   skills: { type: [String], required: true },
   bio: { type: String },
   githubusername: { type: String },
+  scores: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users',
+      },
+      score: {
+        type: Number,
+      },
+    },
+  ],
 
   experience: [
     {

@@ -49,7 +49,7 @@ router.post(
   }
 );
 
-// @route   GET api/myads
+// @route   GET api/job/myads
 // @desc    Get all My Ads
 // @access  Private
 router.get('/myads', auth, async (req, res) => {
@@ -62,7 +62,7 @@ router.get('/myads', auth, async (req, res) => {
   }
 });
 
-// @route   GET api/job/
+// @route   GET api/job/recommendations
 // @desc    Recommend Job Advertisements to engineer
 // @access  Private
 router.get('/recommendations', auth, async (req, res) => {
@@ -75,11 +75,11 @@ router.get('/recommendations', auth, async (req, res) => {
 
     const recommendations = await Job.find({ status: status });
 
-    if (!recommendations) {
-      return res.status(400).json({
-        msg: 'Currently, there is no job ad that we can show you specifically.',
-      });
-    }
+    // if (!recommendations) {
+    //   return res.status(400).json({
+    //     msg: 'Currently, there is no job ad that we can show you specifically.',
+    //   });
+    // }
 
     res.status(200).json(recommendations);
   } catch (error) {
@@ -112,6 +112,85 @@ router.delete('/:id', auth, async (req, res) => {
     if (error.kind == 'ObjectId') {
       return res.status(400).json({ msg: 'Job not found' });
     }
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   PUT api/job/apply/:id
+// @desc    Apply a job
+// @access  Private
+router.put('/apply/:id', auth, async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id);
+
+    // Check if the job has already been applied
+    if (
+      job.applicants.filter(
+        (applicant) => applicant.user.toString() == req.user.id
+      ).length > 0
+    ) {
+      // const removeIndex = job.applicants
+      //   .map((applicant) => applicant.user.toString())
+      //   .indexOf(req.user.id);
+
+      // job.applicants.splice(removeIndex, 1);
+
+      return res.status(400).json({ msg: 'Job has already been applied' });
+    } else {
+      job.applicants.unshift({ user: req.user.id });
+    }
+
+    await job.save();
+
+    res.status(200).json(job.applicants);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   PUT api/job/decline/:id
+// @desc    Decline a job
+// @access  Private
+router.put('/decline/:id', auth, async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id);
+
+    // Check if the job has already been applied
+    // if (
+    //   job.applicants.filter(
+    //     (applicant) => applicant.user.toString() == req.user.id
+    //   ).length === 0
+    // ) {
+    //   return res.status(400).json({ msg: 'Job has not yet been applied' });
+    // }
+
+    // Get the remove index
+    const removeIndex = job.applicants
+      .map((applicant) => applicant.user.toString())
+      .indexOf(req.user.id);
+
+    job.applicants.splice(removeIndex, 1);
+
+    await job.save();
+
+    res.status(200).json(job.applicants);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   GET api/job/applicants/:id
+// @desc    Get all applicants
+// @access  Private
+router.get('/applicants/:id', auth, async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id);
+
+    res.status(200).json(job.applicants);
+  } catch (error) {
+    console.error(error.message);
     res.status(500).send('Server Error');
   }
 });

@@ -101,13 +101,7 @@ router.put('/attend/:id', auth, async (req, res) => {
 
     res.status(200).json(event.attendees);
   } catch (error) {
-    console.error('Server-side error:', error.message);
-    console.error('Request details:', {
-      userId: req.user.id,
-      eventId: req.params.id,
-      headers: req.headers,
-      body: req.body,
-    });
+    console.error(error.message);
     res.status(500).send('Server Error');
   }
 });

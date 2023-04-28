@@ -30,6 +30,14 @@ const EventSchema = new Schema({
   time: {
     type: String,
   },
+  capacity: {
+    type: Number,
+    default: 200,
+  },
+  attendeeCount: {
+    type: Number,
+    default: 0,
+  },
 });
 
 module.exports = Event = mongoose.model('event', EventSchema);

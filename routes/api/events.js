@@ -78,23 +78,23 @@ router.put('/attend/:id', auth, async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
 
-    // Check if the event has already been attend
+    // Event dolu mu
+    if (event.attendeeCount >= event.capacity) {
+      return res.status(400).json({ msg: 'Event Full' });
+    }
+
+    // Evente katılıp katılmadığını kontrol et
     if (
       event.attendees.filter(
-        (attendees) => attendees.user.toString() == req.user.id
+        (attendees) => attendees.user.toString() === req.user.id
       ).length > 0
     ) {
-      // const removeIndex = event.attendees
-      //   .map((attendees) => attendees.user.toString())
-      //   .indexOf(req.user.id);
-
-      // event.attendees.splice(removeIndex, 1);
-
       return res
         .status(400)
         .json({ msg: 'You Have Already Attended This Event' });
     } else {
       event.attendees.unshift({ user: req.user.id });
+      event.attendeeCount += 1;
     }
 
     await event.save();

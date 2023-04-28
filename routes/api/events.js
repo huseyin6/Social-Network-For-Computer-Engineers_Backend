@@ -80,9 +80,9 @@ router.put('/attend/:id', auth, async (req, res) => {
 
     // Check if the event has already been attend
     if (
-      event.attendees.filter(
-        (attendees) => attendees.user.toString() == req.user.id
-      ).length > 0
+      event.attendees.some(
+        (attendees) => attendees.user.toString() === req.user.id
+      )
     ) {
       // const removeIndex = event.attendees
       //   .map((attendees) => attendees.user.toString())

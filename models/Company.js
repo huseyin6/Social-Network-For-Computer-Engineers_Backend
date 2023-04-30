@@ -21,6 +21,11 @@ const CompanySchema = new mongoose.Schema({
     type: String,
   },
 
+  role: {
+    type: String,
+    default: 'company',
+  },
+
   date: {
     type: Date,
     default: Date.now,

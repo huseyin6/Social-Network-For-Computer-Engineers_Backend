@@ -87,7 +87,7 @@ router.get('/recommendations', auth, async (req, res) => {
           description: { $in: searchKeywords },
         },
       ],
-    });
+    }).where('declinedUsers.user').ne(req.user.id); // Exclude jobs that the user has declined
 
     res.status(200).json(recommendedJobs);
   } catch (error) {
@@ -95,6 +95,7 @@ router.get('/recommendations', auth, async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
 
 // @route   DELETE api/job/:id
 // @desc    Delete Job
@@ -164,30 +165,26 @@ router.put('/decline/:id', auth, async (req, res) => {
   try {
     const job = await Job.findById(req.params.id);
 
-    // Check if the job has already been applied
-    // if (
-    //   job.applicants.filter(
-    //     (applicant) => applicant.user.toString() == req.user.id
-    //   ).length === 0
-    // ) {
-    //   return res.status(400).json({ msg: 'Job has not yet been applied' });
-    // }
-
-    // Get the remove index
-    const removeIndex = job.applicants
-      .map((applicant) => applicant.user.toString())
-      .indexOf(req.user.id);
-
-    job.applicants.splice(removeIndex, 1);
+    // Check if the job has already been declined
+    if (
+      job.declinedUsers.filter(
+        (user) => user.user.toString() == req.user.id
+      ).length > 0
+    ) {
+      return res.status(400).json({ msg: 'Job has already been declined' });
+    } else {
+      job.declinedUsers.unshift({ user: req.user.id });
+    }
 
     await job.save();
 
-    res.status(200).json(job.applicants);
+    res.status(200).json(job.declinedUsers);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Server Error');
   }
 });
+
 
 // @route   GET api/job/applicants/:id
 // @desc    Get all applicants

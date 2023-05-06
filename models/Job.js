@@ -14,6 +14,14 @@ const JobSchema = new Schema({
       },
     },
   ],
+  declinedUsers: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users',
+      },
+    },
+  ],
 
   date: { type: Date, default: Date.now },
 });

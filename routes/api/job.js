@@ -63,25 +63,33 @@ router.get('/myads', auth, async (req, res) => {
 });
 
 // @route   GET api/job/recommendations
-// @desc    Recommend Job Advertisements to engineer
+// @desc    Get recommended jobs for a user
 // @access  Private
 router.get('/recommendations', auth, async (req, res) => {
   try {
-    const profile = await Profile.findOne({
-      user: req.user.id,
+    const profile = await Profile.findOne({ user: req.user.id });
+
+    if (!profile) {
+      return res.status(400).json({ msg: 'Profile not found' });
+    }
+
+    const experienceTitles = profile.experience.map((exp) => exp.title);
+    const skills = profile.skills;
+
+    const searchKeywords = [...experienceTitles, ...skills];
+
+    const recommendedJobs = await Job.find({
+      $or: [
+        {
+          title: { $in: searchKeywords },
+        },
+        {
+          description: { $in: searchKeywords },
+        },
+      ],
     });
 
-    const status = profile.status;
-
-    const recommendations = await Job.find({ status: status });
-
-    // if (!recommendations) {
-    //   return res.status(400).json({
-    //     msg: 'Currently, there is no job ad that we can show you specifically.',
-    //   });
-    // }
-
-    res.status(200).json(recommendations);
+    res.status(200).json(recommendedJobs);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Server Error');

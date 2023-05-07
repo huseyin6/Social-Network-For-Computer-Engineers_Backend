@@ -235,4 +235,24 @@ router.delete('/comment/:id/:comment_id', auth, async (req, res) => {
   }
 });
 
+// @route   GET api/posts/search/:key
+// @desc    Search post by description
+// @access  Private
+router.get('/search/:key', auth, async (req, res) => {
+  try {
+    const posts = await Post.find({
+      $or: [
+        {
+          text: { $regex: req.params.key, $options: 'si' },
+        },
+      ],
+    });
+
+    res.status(200).json(posts);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 module.exports = router;

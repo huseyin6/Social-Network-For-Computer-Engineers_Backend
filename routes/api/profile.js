@@ -49,6 +49,7 @@ router.post(
     const {
       company,
       website,
+      mail,
       location,
       bio,
       status,
@@ -65,6 +66,7 @@ router.post(
     profileFields.user = req.user.id;
     if (company) profileFields.company = company;
     if (website) profileFields.website = website;
+    if (mail) profileFields.mail = mail;
     if (location) profileFields.location = location;
     if (bio) profileFields.bio = bio;
     if (status) profileFields.status = status;

@@ -76,17 +76,12 @@ router.get('/recommendations', auth, async (req, res) => {
     const experienceTitles = profile.experience.map((exp) => exp.title);
     const skills = profile.skills;
 
-    const searchKeywords = [...experienceTitles, ...skills];
+    const searchKeywords = [...experienceTitles, ...skills].join(' ');
 
     const recommendedJobs = await Job.find({
-      $or: [
-        {
-          title: { $in: searchKeywords },
-        },
-        {
-          description: { $in: searchKeywords },
-        },
-      ],
+      $text: {
+        $search: searchKeywords,
+      },
     })
       .where('declinedUsers.user')
       .ne(req.user.id); // Exclude jobs that the user has declined

@@ -26,4 +26,5 @@ const JobSchema = new Schema({
   date: { type: Date, default: Date.now },
 });
 
+JobSchema.index({ title: 'text', description: 'text' });
 module.exports = Job = mongoose.model('job', JobSchema);

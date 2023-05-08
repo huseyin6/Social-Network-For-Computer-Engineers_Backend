@@ -87,7 +87,9 @@ router.get('/recommendations', auth, async (req, res) => {
           description: { $in: searchKeywords },
         },
       ],
-    }).where('declinedUsers.user').ne(req.user.id); // Exclude jobs that the user has declined
+    })
+      .where('declinedUsers.user')
+      .ne(req.user.id); // Exclude jobs that the user has declined
 
     res.status(200).json(recommendedJobs);
   } catch (error) {
@@ -95,7 +97,6 @@ router.get('/recommendations', auth, async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
-
 
 // @route   DELETE api/job/:id
 // @desc    Delete Job
@@ -167,9 +168,8 @@ router.put('/decline/:id', auth, async (req, res) => {
 
     // Check if the job has already been declined
     if (
-      job.declinedUsers.filter(
-        (user) => user.user.toString() == req.user.id
-      ).length > 0
+      job.declinedUsers.filter((user) => user.user.toString() == req.user.id)
+        .length > 0
     ) {
       return res.status(400).json({ msg: 'Job has already been declined' });
     } else {
@@ -185,15 +185,25 @@ router.put('/decline/:id', auth, async (req, res) => {
   }
 });
 
-
 // @route   GET api/job/applicants/:id
 // @desc    Get all applicants
 // @access  Private
 router.get('/applicants/:id', auth, async (req, res) => {
   try {
+    const profiles = [];
     const job = await Job.findById(req.params.id);
+    const applicants = job.applicants;
 
-    res.status(200).json(job.applicants);
+    for (const element of applicants) {
+      const id = element.user.toString();
+      const profile = await Profile.findOne({ user: id }).populate('user', [
+        'name',
+        'avatar',
+      ]);
+      profiles.push(profile);
+    }
+
+    res.status(200).json(profiles);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Server Error');

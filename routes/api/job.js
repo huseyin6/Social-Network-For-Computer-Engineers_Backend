@@ -33,8 +33,8 @@ router.post(
       );
 
       const newJob = new Job({
-        company: req.company.id,
-        companyName: company.name, 
+        companyx: req.company.id,
+        companyName: companyx.name, 
         title: req.body.title,
         status: req.body.status,
         description: req.body.description,

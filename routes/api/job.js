@@ -76,7 +76,8 @@ router.get('/recommendations', auth, async (req, res) => {
 
     const recommendations = await Job.find({ status: status })
       .where('declinedUsers.user')
-      .ne(req.user.id); // Exclude jobs that the user has declined;
+      .ne(req.user.id)
+      .populate('company', 'name'); // Exclude jobs that the user has declined;
 
     // if (!recommendations) {
     //   return res.status(400).json({

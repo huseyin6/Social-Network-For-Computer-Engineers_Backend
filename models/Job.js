@@ -25,6 +25,7 @@ const JobSchema = new Schema({
   ],
 
   date: { type: Date, default: Date.now },
+  endDate: {type: Date, required: true}
 });
 
 JobSchema.index({ title: 'text', description: 'text' });

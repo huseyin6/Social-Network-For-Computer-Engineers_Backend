@@ -19,6 +19,7 @@ router.post(
       check('title', 'Title is required').not().isEmpty(),
       check('status', 'Status is required').not().isEmpty(),
       check('description', 'Description is required').not().isEmpty(),
+      check('endDate', 'End Date is required').not().isEmpty(),
     ],
   ],
   async (req, res) => {
@@ -38,6 +39,7 @@ router.post(
         title: req.body.title,
         status: req.body.status,
         description: req.body.description,
+        endDate : req.body.endDate,
       });
 
       // Advertise Job

@@ -34,12 +34,11 @@ router.post(
       );
 
       const newJob = new Job({
-        company: req.company.id, 
-        companyName: company.name,
+        company: req.company.id,
         title: req.body.title,
         status: req.body.status,
         description: req.body.description,
-        endDate : req.body.endDate,
+        endDate: req.body.endDate,
       });
 
       // Advertise Job
@@ -57,14 +56,11 @@ router.post(
 // @access  Private
 router.get('/myads', auth, async (req, res) => {
   try {
-<<<<<<< HEAD
     const jobs = await Job.find({ company: req.company.id }).populate(
       'company',
       ['name', 'avatar']
     );
-=======
-    const jobs = await Job.find({ company: req.company.id }).populate('company', 'name');
->>>>>>> 1b27bb85fe75196be07e908b77adeaca48a81ea2
+
     res.status(200).json(jobs);
   } catch (error) {
     console.error(error.message);
@@ -86,8 +82,7 @@ router.get('/recommendations', auth, async (req, res) => {
     const recommendations = await Job.find({ status: status })
       .populate('company', ['name', 'avatar'])
       .where('declinedUsers.user')
-      .ne(req.user.id)
-      .populate('company', 'name'); // Exclude jobs that the user has declined;
+      .ne(req.user.id);
 
     // if (!recommendations) {
     //   return res.status(400).json({
@@ -101,7 +96,6 @@ router.get('/recommendations', auth, async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
-
 
 // @route   DELETE api/job/:id
 // @desc    Delete Job

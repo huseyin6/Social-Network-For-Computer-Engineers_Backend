@@ -54,7 +54,10 @@ router.post(
 // @access  Private
 router.get('/myads', auth, async (req, res) => {
   try {
-    const jobs = await Job.find({ company: req.company.id });
+    const jobs = await Job.find({ company: req.company.id }).populate(
+      'company',
+      ['name', 'avatar']
+    );
     res.status(200).json(jobs);
   } catch (error) {
     console.error(error.message);
@@ -74,6 +77,7 @@ router.get('/recommendations', auth, async (req, res) => {
     const status = profile.status;
 
     const recommendations = await Job.find({ status: status })
+      .populate('company', ['name', 'avatar'])
       .where('declinedUsers.user')
       .ne(req.user.id); // Exclude jobs that the user has declined;
 

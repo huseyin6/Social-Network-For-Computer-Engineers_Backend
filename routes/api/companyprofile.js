@@ -4,6 +4,7 @@ const auth = require('../../middleware/auth');
 const { check, validationResult } = require('express-validator');
 const CompanyProfile = require('../../models/CompanyProfile');
 const Company = require('../../models/Company');
+const Job = require('../../models/Job');
 
 const request = require('request');
 const config = require('config');
@@ -141,7 +142,8 @@ router.delete('/', auth, async (req, res) => {
     // Remove profile
     await CompanyProfile.findOneAndRemove({ company: req.company.id });
     // Remove user
-    await Company.findOneAndRemove({ _id: req.company.id });
+    await Company.findOneAndRemove({ company: req.company.id });
+    await Job.deleteMany({ _id: req.company.id });
     res.status(200).json({ msg: 'Company deleted' });
   } catch (error) {
     console.error(error.message);

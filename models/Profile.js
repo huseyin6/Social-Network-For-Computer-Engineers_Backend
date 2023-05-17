@@ -22,6 +22,9 @@ const ProfileSchema = new mongoose.Schema({
     },
   ],
 
+  avgScore: { type: Number, default: 0 }, 
+  scoreCount: { type: Number, default: 0 }, 
+
   experience: [
     {
       title: { type: String, required: true },

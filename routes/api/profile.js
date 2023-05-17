@@ -333,49 +333,62 @@ router.get('/github/:username', async (req, res) => {
 });
 
 // @route   PUT api/profile/score/:id
-// @desc    Score an engineer
+// @desc    Score a profile
 // @access  Private
-router.put('/rate/:id', auth, async (req, res) => {
-  try {
-    const { score } = req.body;
-    const profile = await Profile.findById(req.params.id);
-    if (!profile) {
-      return res.status(404).json({ error: 'Profile not found' });
+router.put(
+  '/score/:id',
+  auth,
+  async (req, res) => {
+    try {
+      const profile = await Profile.findById(req.params.id);
+
+      // Check if the profile has already been scored by this user
+      const scored = profile.scores.filter(
+        (score) => score.user.toString() === req.user.id
+      );
+
+      if (scored.length > 0) {
+        // Update
+        const removeIndex = profile.scores
+          .map((score) => score.user.toString())
+          .indexOf(req.user.id);
+
+        profile.scores.splice(removeIndex, 1, { user: req.user.id, score: req.body.score });
+      } else {
+        // Add
+        profile.scores.unshift({ user: req.user.id, score: req.body.score });
+      }
+
+      await profile.save();
+
+      return res.json(profile.scores);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
     }
-    // Check if user already rated
-    const existingRating = profile.ratings.find(rating => rating.user.toString() === req.userId);
-    if (existingRating) {
-      return res.status(400).json({ error: 'Profile already rated' });
-    }
-    // Add new rating
-    profile.ratings.push({ user: req.userId, score });
-    await profile.save();
-    res.json({ message: 'Rating added successfully' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
   }
-});
+);
 
-// @route   GET api/profile/score
-// @desc    Get score of engineer
+// @route   GET api/profile/score/:id
+// @desc    Get average score of a profile
 // @access  Public
-router.get('/score/:user_id', async (req, res) => {
+router.get('/score/:id', async (req, res) => {
   try {
-    const profile = await Profile.findOne({
-      user: req.params.user_id,
-    });
+    const profile = await Profile.findById(req.params.id);
+
     if (!profile) {
-      return res.status(400).json({ msg: 'Profile not found' });
+      return res.status(404).json({ msg: 'Profile not found' });
     }
 
-    const given_scores = profile.scores.map((index) => index.score);
-    const sum = given_scores.reduce((a, b) => a + b, 0);
-    const avg = sum / given_scores.length || 0;
+    const scores = profile.scores.map((score) => score.score);
+    const averageScore = scores.reduce((a, b) => a + b, 0) / scores.length || 0;
 
-    res.status(200).json({ score: avg });
-  } catch (error) {
-    console.error(error.message);
+    res.json({ score: averageScore });
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind == 'ObjectId') {
+      return res.status(404).json({ msg: 'Profile not found' });
+    }
     res.status(500).send('Server Error');
   }
 });

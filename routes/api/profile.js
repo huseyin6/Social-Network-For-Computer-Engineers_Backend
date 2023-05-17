@@ -335,34 +335,25 @@ router.get('/github/:username', async (req, res) => {
 // @route   PUT api/profile/score/:id
 // @desc    Score an engineer
 // @access  Private
-router.put('/score/:id', auth, async (req, res) => {
+router.put('/rate/:id', auth, async (req, res) => {
   try {
+    const { score } = req.body;
     const profile = await Profile.findById(req.params.id);
-
-    // Check if the engineer has already been scored
-    if (
-      profile.scores.filter((score) => score.user.toString() == req.user.id)
-        .length > 0
-    ) {
-      const given_score_index = profile.scores
-        .map((index) => index.user.toString())
-        .indexOf(req.user.id);
-      // profile.scores.splice(removeIndex, 1);
-
-      return res.status(400).json({
-        msg: 'You have already scored this engineer',
-        givenScore: profile.scores.at(given_score_index).score,
-      });
-    } else {
-      const point = req.body.score;
-      profile.scores.unshift({ user: req.user.id, score: point });
+    if (!profile) {
+      return res.status(404).json({ error: 'Profile not found' });
     }
-
+    // Check if user already rated
+    const existingRating = profile.ratings.find(rating => rating.user.toString() === req.userId);
+    if (existingRating) {
+      return res.status(400).json({ error: 'Profile already rated' });
+    }
+    // Add new rating
+    profile.ratings.push({ user: req.userId, score });
     await profile.save();
-    res.status(200).json(profile.scores);
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).send('Server Error');
+    res.json({ message: 'Rating added successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

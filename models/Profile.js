@@ -10,7 +10,7 @@ const ProfileSchema = new mongoose.Schema({
   skills: { type: [String], required: true },
   bio: { type: String },
   githubusername: { type: String },
-  ratings: [
+  scores: [
     {
       user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -22,8 +22,8 @@ const ProfileSchema = new mongoose.Schema({
     },
   ],
 
-  avgScore: { type: Number, default: 0 }, 
-  scoreCount: { type: Number, default: 0 }, 
+  avgScore: { type: Number, default: 0 },
+  scoreCount: { type: Number, default: 0 },
 
   experience: [
     {

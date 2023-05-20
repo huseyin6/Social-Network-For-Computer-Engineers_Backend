@@ -4,6 +4,8 @@ const auth = require('../../middleware/auth');
 const { check, validationResult } = require('express-validator');
 const Profile = require('../../models/Profile');
 const User = require('../../models/User');
+const Post = require('../../models/Post');
+const Question = require('../../models/Question');
 
 const request = require('request');
 const config = require('config');
@@ -157,12 +159,15 @@ router.get('/user/:user_id', async (req, res) => {
 router.delete('/', auth, async (req, res) => {
   // Since method private(we have accessed the token), we actually add auth middleware auth
 
-  // TO-DO: Remove users posts also
   try {
     // Remove profile
     await Profile.findOneAndRemove({ user: req.user.id });
     // Remove user
     await User.findOneAndRemove({ _id: req.user.id });
+    // Remove post
+    await Post.deleteMany({ _id: req.user.id });
+    // Remove question
+    await Question.deleteMany({ _id: req.user.id });
     res.status(200).json({ msg: 'User deleted' });
   } catch (error) {
     console.error(error.message);
@@ -335,39 +340,38 @@ router.get('/github/:username', async (req, res) => {
 // @route   PUT api/profile/score/:id
 // @desc    Score a profile
 // @access  Private
-router.put(
-  '/score/:id',
-  auth,
-  async (req, res) => {
-    try {
-      const profile = await Profile.findById(req.params.id);
+router.put('/score/:id', auth, async (req, res) => {
+  try {
+    const profile = await Profile.findById(req.params.id);
 
-      // Check if the profile has already been scored by this user
-      const scored = profile.scores.filter(
-        (score) => score.user.toString() === req.user.id
-      );
+    // Check if the profile has already been scored by this user
+    const scored = profile.scores.filter(
+      (score) => score.user.toString() === req.user.id
+    );
 
-      if (scored.length > 0) {
-        // Update
-        const removeIndex = profile.scores
-          .map((score) => score.user.toString())
-          .indexOf(req.user.id);
+    if (scored.length > 0) {
+      // Update
+      const removeIndex = profile.scores
+        .map((score) => score.user.toString())
+        .indexOf(req.user.id);
 
-        profile.scores.splice(removeIndex, 1, { user: req.user.id, score: req.body.score });
-      } else {
-        // Add
-        profile.scores.unshift({ user: req.user.id, score: req.body.score });
-      }
-
-      await profile.save();
-
-      return res.json(profile.scores);
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server Error');
+      profile.scores.splice(removeIndex, 1, {
+        user: req.user.id,
+        score: req.body.score,
+      });
+    } else {
+      // Add
+      profile.scores.unshift({ user: req.user.id, score: req.body.score });
     }
+
+    await profile.save();
+
+    return res.json(profile.scores);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
-);
+});
 
 // @route   GET api/profile/score/:id
 // @desc    Get average score of a profile

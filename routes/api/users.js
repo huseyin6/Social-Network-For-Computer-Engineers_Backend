@@ -6,6 +6,8 @@ const jwt = require('jsonwebtoken');
 const { check, validationResult } = require('express-validator');
 const User = require('../../models/User');
 const Company = require('../../models/Company');
+const Profile = require('../../models/Profile');
+const CompanyProfile = require('../../models/CompanyProfile');
 const config = require('config');
 
 // @route   POST api/users
@@ -63,6 +65,27 @@ router.post(
           id: user.id,
         },
       };
+
+      const profileFields = {};
+        profileFields.user = user.id;
+        profileFields.company = '';
+        profileFields.website = '';
+        profileFields.mail = '';
+        profileFields.location = '';
+        profileFields.bio = '';
+        profileFields.status = '';
+        profileFields.skills = [];
+
+        profileFields.social = {};
+        profileFields.social.youtube = '';
+        profileFields.social.twitter = '';
+        profileFields.social.facebook = '';
+        profileFields.social.linkedin = '';
+        profileFields.social.instagram = '';
+        profileFields.social.github = '';
+
+      let profile = new Profile(profileFields);
+      await profile.save();
 
       jwt.sign(
         payload,
@@ -139,6 +162,22 @@ router.post(
         },
       };
 
+      const profileFields = {};
+      profileFields.company = company.id;
+      profileFields.website = '';
+      profileFields.location = '';
+      profileFields.about = '';
+      
+      profileFields.social = {};
+      profileFields.social.youtube = '';
+      profileFields.social.twitter = '';
+      profileFields.social.facebook = '';
+      profileFields.social.linkedin = '';
+      profileFields.social.instagram = '';
+
+      let profile = new CompanyProfile(profileFields);
+
+      await profile.save();
       jwt.sign(
         payload,
         config.get('jwtSecret'),

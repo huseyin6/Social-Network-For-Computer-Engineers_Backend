@@ -6,10 +6,9 @@ const ProfileSchema = new mongoose.Schema({
   website: { type: String },
   mail: { type: String },
   location: { type: String },
-  status: { type: String, required: true },
-  skills: { type: [String], required: true },
+  status: { type: String },
+  skills: { type: [String] },
   bio: { type: String },
-  githubusername: { type: String },
   scores: [
     {
       user: {
@@ -55,6 +54,7 @@ const ProfileSchema = new mongoose.Schema({
     facebook: { type: String },
     linkedin: { type: String },
     instagram: { type: String },
+    github: {type: String},
   },
 
   date: { type: Date, default: Date.now },

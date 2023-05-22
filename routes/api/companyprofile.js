@@ -68,26 +68,22 @@ router.post('/', auth, async (req, res) => {
 
   const profileFields = {};
   profileFields.company = req.company.id;
-  if (website) profileFields.website = website;
-  if (location) profileFields.location = location;
-  if (about) profileFields.about = about;
-  // res.send('Profile Route');
-
-  // ctrl+shift+l
-
-  // Build social object
+  profileFields.website = website;
+  profileFields.location = location;
+  profileFields.about = about;
+  
   profileFields.social = {};
-  if (youtube) profileFields.social.youtube = youtube;
-  if (twitter) profileFields.social.twitter = twitter;
-  if (facebook) profileFields.social.facebook = facebook;
-  if (linkedin) profileFields.social.linkedin = linkedin;
-  if (instagram) profileFields.social.instagram = instagram;
+  profileFields.social.youtube = youtube;
+  profileFields.social.twitter = twitter;
+  profileFields.social.facebook = facebook;
+  profileFields.social.linkedin = linkedin;
+  profileFields.social.instagram = instagram;
 
   try {
     let profile = await CompanyProfile.findOne({ company: req.company.id });
 
     // Update profile
-    if (profile) {
+    
       profile = await CompanyProfile.findOneAndUpdate(
         { company: req.company.id },
         { $set: profileFields },
@@ -95,12 +91,7 @@ router.post('/', auth, async (req, res) => {
       );
 
       return res.status(200).json(profile);
-    }
 
-    // Create profile
-    profile = new CompanyProfile(profileFields);
-    await profile.save();
-    res.status(200).json(profile);
   } catch (error) {
     console.error(err.message);
     res.status(500).send('Server Error');

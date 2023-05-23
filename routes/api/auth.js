@@ -69,6 +69,9 @@ router.post('/verify-email', async (req, res) => {
 // @route   POST api/auth
 // @desc    Authenticate engineer or company & Get token
 // @access  Public
+// @route   POST api/auth
+// @desc    Authenticate engineer or company & Get token
+// @access  Public
 router.post(
   '/',
   [
@@ -80,27 +83,20 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    if (!user.isVerified) {
-      return res.status(400).json({ errors: [{ msg: 'Email not verified' }] });
-    }
+  
     const { email, password } = req.body;
     try {
       let user = await User.findOne({ email });
 
       if (!user) {
         let company = await Company.findOne({ email });
-        // console.log(company);
-
         if (!company) {
-          return res
-            .status(400)
-            .json({ errors: [{ msg: 'Invalid Credentials' }] });
+          return res.status(400).json({ errors: [{ msg: 'Invalid Credentials' }] });
         }
+
         const isMatchCompany = await bcrypt.compare(password, company.password);
         if (!isMatchCompany) {
-          return res
-            .status(400)
-            .json({ errors: [{ msg: 'Invalid Credentials' }] });
+          return res.status(400).json({ errors: [{ msg: 'Invalid Credentials' }] });
         }
 
         const payloadCompany = {
@@ -114,20 +110,19 @@ router.post(
           config.get('jwtSecret'),
           { expiresIn: 3600 }, // 1 hour expire time
           (error, token) => {
-            if (error) {
-              throw error;
-            } else {
-              return res.status(200).json({ token, role: 'company' });
-            }
+            if (error) throw error;
+            return res.status(200).json({ token, role: 'company' });
           }
         );
       } else {
-        const isMatch = await bcrypt.compare(password, user.password);
+        // Ensure user has verified their email
+        if (!user.isVerified) {
+          return res.status(400).json({ errors: [{ msg: 'Email not verified' }] });
+        }
 
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-          return res
-            .status(400)
-            .json({ errors: [{ msg: 'Invalid Credentials' }] });
+          return res.status(400).json({ errors: [{ msg: 'Invalid Credentials' }] });
         }
 
         const payload = {
@@ -141,11 +136,8 @@ router.post(
           config.get('jwtSecret'),
           { expiresIn: 3600 }, // 1 hour expire time
           (error, token) => {
-            if (error) {
-              throw error;
-            } else {
-              res.status(200).json({ token, role: 'engineer' });
-            }
+            if (error) throw error;
+            res.status(200).json({ token, role: 'engineer' });
           }
         );
       }
@@ -191,6 +183,7 @@ router.post(
         email,
         password,
         verificationCode,
+        isVerified: false,
       });
 
       // Encrypt the password
@@ -212,7 +205,6 @@ router.post(
         text: `Your verification code is: ${verificationCode}`,
       };
 
-      await transporter.sendMail(mailOptions);
 
       return res.json({ msg: 'User registered successfully. Verification code sent to your email' });
     } catch (error) {

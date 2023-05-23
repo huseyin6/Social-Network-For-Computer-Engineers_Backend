@@ -5,8 +5,6 @@ const { check, validationResult } = require('express-validator');
 const config = require('config');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const nodemailer = require('nodemailer');
-const crypto = require('crypto');
 
 const User = require('../../models/User');
 const Company = require('../../models/Company');

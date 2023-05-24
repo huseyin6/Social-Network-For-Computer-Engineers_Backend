@@ -5,6 +5,7 @@ const { check, validationResult } = require('express-validator');
 const config = require('config');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
 
 const User = require('../../models/User');
 const Company = require('../../models/Company');
@@ -211,6 +212,35 @@ router.post(
     }
   }
 );
+
+
+
+// Generate a random 6 digit number
+const verificationCode = Math.floor(100000 + Math.random() * 900000);
+
+// Send the verification code to the user's email
+let transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'yourEmail@gmail.com',
+    pass: 'yourPassword'
+  }
+});
+
+let mailOptions = {
+  from: 'yourEmail@gmail.com',
+  to: req.body.email,
+  subject: 'Verification Code',
+  text: 'Your verification code is: ' + verificationCode
+};
+
+transporter.sendMail(mailOptions, function(err, data) {
+  if (err) {
+    console.log('Error occurs', err);
+  } else {
+    console.log('Email sent!');
+  }
+});
 
 
 module.exports = router;

@@ -195,29 +195,29 @@ router.post(
 
       // Nodemailer configuration
       let transporter = nodemailer.createTransport({
-        host: 'smtp.example.com', // Replace with your SMTP server
+        host: 'smtp.gmail.com', // Replace with your SMTP server
         port: 587,
         secure: false, // true for 465, false for other ports
         auth: {
-          user: 'user@example.com', // Replace with your email
-          pass: 'password' // Replace with your email password
+          user: 'c^3@app.com', // Replace with your email
+          pass: 'c32023c3' // Replace with your email password
         }
       });
-
+      
       let mailOptions = {
-        from: '"Your Company" <no-reply@example.com>', // sender address
+        from: '"C^3" <no-reply@C^3.com>', // sender address, // sender address
         to: email, // user's email
         subject: 'Verification Code',
         text: 'Your verification code is: ' + verificationCode
       };
-
+      
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
           return console.log(error);
         }
         console.log('Message sent: %s', info.messageId);
       });
-
+      
       res.send('User registered. Verification email sent.');
     } catch (err) {
       console.error(err.message);

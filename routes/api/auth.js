@@ -155,7 +155,10 @@ router.post(
   [
     check('name', 'Name is required').not().isEmpty(),
     check('email', 'Please include a valid email').isEmail(),
-    check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 }),
+    check(
+      'password',
+      'Please enter a password with 6 or more characters'
+    ).isLength({ min: 6 }),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -166,81 +169,62 @@ router.post(
     const { name, email, password } = req.body;
 
     try {
-      // Check if the email is already registered
       let user = await User.findOne({ email });
 
       if (user) {
-        return res.status(400).json({ errors: [{ msg: 'Email is already registered' }] });
+        return res
+          .status(400)
+          .json({ errors: [{ msg: 'User already exists' }] });
       }
 
-      // Generate a random 6-digit verification code
-      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-      // Create a new user instance
       user = new User({
         name,
         email,
         password,
-        verificationCode,
-        isVerified: false,
       });
 
-      // Encrypt the password
       const salt = await bcrypt.genSalt(10);
+
       user.password = await bcrypt.hash(password, salt);
 
-      // Save the user to the database
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+      user.verificationCode = verificationCode;
+
       await user.save();
 
-      // Send verification email to the user's registered email address
-      const transporter = nodemailer.createTransport({
-        // Configure the email transporter settings (e.g., SMTP)
+      // Nodemailer configuration
+      let transporter = nodemailer.createTransport({
+        host: 'smtp.example.com', // Replace with your SMTP server
+        port: 587,
+        secure: false, // true for 465, false for other ports
+        auth: {
+          user: 'user@example.com', // Replace with your email
+          pass: 'password' // Replace with your email password
+        }
       });
 
-      const mailOptions = {
-        from: 'your_email@example.com',
-        to: email,
-        subject: 'Email Verification',
-        text: `Your verification code is: ${verificationCode}`,
+      let mailOptions = {
+        from: '"Your Company" <no-reply@example.com>', // sender address
+        to: email, // user's email
+        subject: 'Verification Code',
+        text: 'Your verification code is: ' + verificationCode
       };
 
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          return console.log(error);
+        }
+        console.log('Message sent: %s', info.messageId);
+      });
 
-      return res.json({ msg: 'User registered successfully. Verification code sent to your email' });
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).send('Server Error');
+      res.send('User registered');
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server error');
     }
   }
 );
-
-
-
-// Generate a random 6 digit number
-const verificationCode = Math.floor(100000 + Math.random() * 900000);
-
-// Send the verification code to the user's email
-let transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'yourEmail@gmail.com',
-    pass: 'yourPassword'
-  }
-});
-
-let mailOptions = {
-  from: 'yourEmail@gmail.com',
-  to: req.body.email,
-  subject: 'Verification Code',
-  text: 'Your verification code is: ' + verificationCode
-};
-
-transporter.sendMail(mailOptions, function(err, data) {
-  if (err) {
-    console.log('Error occurs', err);
-  } else {
-    console.log('Email sent!');
-  }
-});
 
 
 module.exports = router;

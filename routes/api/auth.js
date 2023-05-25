@@ -189,7 +189,7 @@ router.post(
 
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-      user.verificationCode = verificationCode;
+      user.verificationCode = verificationCode; // add a field to your User schema for this
 
       await user.save();
 
@@ -218,10 +218,63 @@ router.post(
         console.log('Message sent: %s', info.messageId);
       });
 
-      res.send('User registered');
+      res.send('User registered. Verification email sent.');
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server error');
+    }
+  }
+);
+
+// POST request to /verify
+router.post(
+  '/verify',
+  [
+    // Validation: check that the provided code is a number with 6 digits
+    check('code', 'Verification code must be a number with 6 digits')
+      .isNumeric()
+      .isLength({ min: 6, max: 6 }),
+    check('userId', 'User ID is required')
+      .not()
+      .isEmpty()
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { userId, code } = req.body;
+
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(400).json({ errors: [{ msg: 'Invalid user' }] });
+      }
+
+      if (user.verificationCode !== code) {
+        // Increment the verification attempts count and save
+        user.verificationAttempts++;
+        await user.save();
+
+        // Limit the number of attempts (in this case, 5)
+        if (user.verificationAttempts >= 5) {
+          return res.status(429).json({ errors: [{ msg: 'Too many attempts. Please try again later.' }] });
+        } else {
+          return res.status(400).json({ errors: [{ msg: 'Invalid verification code' }] });
+        }
+      }
+
+      // If the code is correct, mark the user as verified and reset the attempts count
+      user.verificationCode = null;
+      user.verificationAttempts = 0;
+      user.isVerified = true; // Add this field to your User schema
+      await user.save();
+
+      return res.json({ msg: 'User verified successfully' });
+    } catch (err) {
+      console.error(err.message);
+      return res.status(500).json({ msg: 'Server error' });
     }
   }
 );

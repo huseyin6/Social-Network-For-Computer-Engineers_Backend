@@ -154,7 +154,8 @@ router.post(
         password,
       });
 
-      user.password = await bcrypt.hash(password, 10);
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
 
       // Generate a six-digit code
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -169,25 +170,28 @@ router.post(
         port: 587,
         secure: false, // true for 465, false for other ports
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASSWORD
+          user: process.env.EMAIL_USER, // replace with your email user
+          pass: process.env.EMAIL_PASSWORD, // replace with your email password
         }
       });
       
+      // Mail options
       let mailOptions = {
-        from: '"C^3" <no-reply@C^3.com>', // sender address, // sender address
-        to: email, // user's email
-        subject: 'Verification Code',
-        text: 'Your verification code is: ' + verificationCode
+        from: '"Your Service Name" <your-service-email@example.com>', // sender address
+        to: email, // receiver address
+        subject: 'Verification Code', // Subject line
+        text: `Your verification code is: ${verificationCode}`, // plain text body
       };
-      
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error(error);
-          return res.status(500).json({ msg: 'Failed to send email' });
+
+      // send mail
+      transporter.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).send('Error sending email');
+        } else {
+          console.log('Email sent: ' + info.response);
+          res.status(200).json({ msg: 'Verification email sent' });
         }
-        console.log('Message sent: %s', info.messageId);
-        res.status(200).json({ msg: 'User registered. Verification email sent.' });
       });
 
     } catch (err) {
@@ -196,6 +200,7 @@ router.post(
     }
   }
 );
+
 
 
 

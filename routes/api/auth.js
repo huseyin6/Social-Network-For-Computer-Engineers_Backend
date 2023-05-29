@@ -34,36 +34,6 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// @route   POST api/auth/verify-email
-// @desc    Verify user's email
-// @access  Public
-router.post('/verify-email', async (req, res) => {
-  const { email, verificationCode } = req.body;
-
-  try {
-    // Find the user by email
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(400).json({ msg: 'User not found' });
-    }
-
-    // Check if the provided verification code matches the stored code
-    if (verificationCode !== user.verificationCode) {
-      return res.status(400).json({ msg: 'Invalid verification code' });
-    }
-
-    // Update the user's status to "verified"
-    user.isVerified = true;
-    await user.save();
-
-    return res.json({ msg: 'Email verification successful' });
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).send('Server Error');
-  }
-});
-
 
 // @route   POST api/auth
 // @desc    Authenticate engineer or company & Get token

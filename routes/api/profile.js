@@ -350,6 +350,7 @@ router.put('/score/:id', auth, async (req, res) => {
     );
 
     let scoreFlag = false;
+    let oldScore = 0;
 
     if (scored.length > 0) {
       // Update
@@ -357,15 +358,24 @@ router.put('/score/:id', auth, async (req, res) => {
         .map((score) => score.user.toString())
         .indexOf(req.user.id);
 
+      oldScore = profile.scores[removeIndex].score;
+
       profile.scores.splice(removeIndex, 1, {
         user: req.user.id,
         score: req.body.score,
       });
+
       scoreFlag = true;
     } else {
       // Add
       profile.scores.unshift({ user: req.user.id, score: req.body.score });
+      // Increase the count
+      profile.scoreCount += 1;
     }
+
+    // Update total and average
+    profile.scoreTotal = profile.scoreTotal - oldScore + req.body.score;
+    profile.averageScore = profile.scoreTotal / profile.scoreCount;
 
     await profile.save();
 
@@ -375,6 +385,7 @@ router.put('/score/:id', auth, async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
 
 // @route   GET api/profile/score/:id
 // @desc    Get average score of a profile

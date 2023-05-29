@@ -186,9 +186,10 @@ router.post(
 
       user.password = await bcrypt.hash(password, 10);
 
+      // Generate a six-digit code
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-      user.verificationCode = verificationCode; // add a field to your User schema for this
+      user.verificationCode = verificationCode;
 
       await user.save();
 
@@ -198,8 +199,8 @@ router.post(
         port: 587,
         secure: false, // true for 465, false for other ports
         auth: {
-          user: 'c^3@app.com', // Replace with your email
-          pass: 'c32023c3' // Replace with your email password
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD
         }
       });
       
@@ -212,12 +213,13 @@ router.post(
       
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-          return console.log(error);
+          console.error(error);
+          return res.status(500).json({ msg: 'Failed to send email' });
         }
         console.log('Message sent: %s', info.messageId);
+        res.status(200).json({ msg: 'User registered. Verification email sent.' });
       });
-      
-      res.send('User registered. Verification email sent.');
+
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server error');
@@ -225,93 +227,6 @@ router.post(
   }
 );
 
-// POST request to /verify
-router.post(
-  '/verify',
-  [
-    // Validation: check that the provided code is a number with 6 digits
-    check('code', 'Verification code must be a number with 6 digits')
-      .isNumeric()
-      .isLength({ min: 6, max: 6 }),
-    check('userId', 'User ID is required')
-      .not()
-      .isEmpty()
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { userId, code } = req.body;
-
-    try {
-      const user = await User.findById(userId);
-      if (!user) {
-        return res.status(400).json({ errors: [{ msg: 'Invalid user' }] });
-      }
-
-      if (user.verificationCode !== code) {
-        // Increment the verification attempts count and save
-        user.verificationAttempts++;
-        await user.save();
-
-        // Limit the number of attempts (in this case, 5)
-        if (user.verificationAttempts >= 5) {
-          return res.status(429).json({ errors: [{ msg: 'Too many attempts. Please try again later.' }] });
-        } else {
-          return res.status(400).json({ errors: [{ msg: 'Invalid verification code' }] });
-        }
-      }
-
-      // If the code is correct, mark the user as verified and reset the attempts count
-      user.verificationCode = null;
-      user.verificationAttempts = 0;
-      user.isVerified = true; // Add this field to your User schema
-      await user.save();
-
-      return res.json({ msg: 'User verified successfully' });
-    } catch (err) {
-      console.error(err.message);
-      return res.status(500).json({ msg: 'Server error' });
-    }
-  }
-);
-
-// @route   POST api/auth/send-email
-// @desc    Send verification email
-// @access  Public
-router.post('/send-email', async (req, res) => {
-  const { email, verificationCode } = req.body;
-
-  // Nodemailer configuration
-  let transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com', // Replace with your SMTP server
-    port: 587,
-    secure: false, // true for 465, false for other ports
-// to this
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD
-    }
-  });
-
-  let mailOptions = {
-    from: '"C^3" <no-reply@C^3.com>', // sender address, // sender address
-    to: email, // user's email
-    subject: 'Verification Code',
-    text: 'Your verification code is: ' + verificationCode
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.error(error);
-      return res.status(500).json({ msg: 'Failed to send email' });
-    }
-    console.log('Message sent: %s', info.messageId);
-    res.status(200).json({ msg: 'Email sent successfully' });
-  });
-});
 
 
 

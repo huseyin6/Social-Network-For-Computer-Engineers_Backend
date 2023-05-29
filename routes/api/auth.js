@@ -130,9 +130,10 @@ router.post(
           },
         };
 
+        // to this
         jwt.sign(
           payload,
-          config.get('jwtSecret'),
+          process.env.JWT_SECRET,
           { expiresIn: 3600 }, // 1 hour expire time
           (error, token) => {
             if (error) throw error;
@@ -183,9 +184,7 @@ router.post(
         password,
       });
 
-      const salt = await bcrypt.genSalt(10);
-
-      user.password = await bcrypt.hash(password, salt);
+      user.password = await bcrypt.hash(password, 10);
 
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -278,6 +277,42 @@ router.post(
     }
   }
 );
+
+// @route   POST api/auth/send-email
+// @desc    Send verification email
+// @access  Public
+router.post('/send-email', async (req, res) => {
+  const { email, verificationCode } = req.body;
+
+  // Nodemailer configuration
+  let transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com', // Replace with your SMTP server
+    port: 587,
+    secure: false, // true for 465, false for other ports
+// to this
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD
+    }
+  });
+
+  let mailOptions = {
+    from: '"C^3" <no-reply@C^3.com>', // sender address, // sender address
+    to: email, // user's email
+    subject: 'Verification Code',
+    text: 'Your verification code is: ' + verificationCode
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error(error);
+      return res.status(500).json({ msg: 'Failed to send email' });
+    }
+    console.log('Message sent: %s', info.messageId);
+    res.status(200).json({ msg: 'Email sent successfully' });
+  });
+});
+
 
 
 module.exports = router;

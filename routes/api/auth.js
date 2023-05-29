@@ -166,30 +166,28 @@ router.post(
 
       // Nodemailer configuration
       let transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com', 
+        host: 'smtp.gmail.com', // Replace with your SMTP server
         port: 587,
-        secure: false, 
+        secure: false, // true for 465, false for other ports
         auth: {
-          user: process.env.EMAIL_USER, 
-          pass: process.env.EMAIL_PASSWORD, 
+          user: process.env.EMAIL_USER, // replace with your email user
+          pass: process.env.EMAIL_PASSWORD, // replace with your email password
         }
       });
       
       // Mail options
       let mailOptions = {
-        from: '"c^3" <c^3@gmail.com>', // sender address
+        from: '"Your Service Name" <your-service-email@example.com>', // sender address
         to: email, // receiver address
         subject: 'Verification Code', // Subject line
         text: `Your verification code is: ${verificationCode}`, // plain text body
       };
 
-      console.log(mailOptions.text);
-
       // send mail
       transporter.sendMail(mailOptions, (err, info) => {
         if (err) {
-          console.log('Error sending email:', err);
-          return res.status(500).json({ msg: 'Error sending email', error: err.message });
+          console.log(err);
+          return res.status(500).send('Error sending email');
         } else {
           console.log('Email sent: ' + info.response);
           res.status(200).json({ msg: 'Verification email sent' });

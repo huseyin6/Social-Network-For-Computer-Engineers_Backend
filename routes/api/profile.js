@@ -349,6 +349,8 @@ router.put('/score/:id', auth, async (req, res) => {
       (score) => score.user.toString() === req.user.id
     );
 
+    let scoreFlag = false;
+
     if (scored.length > 0) {
       // Update
       const removeIndex = profile.scores
@@ -359,6 +361,7 @@ router.put('/score/:id', auth, async (req, res) => {
         user: req.user.id,
         score: req.body.score,
       });
+      scoreFlag = true;
     } else {
       // Add
       profile.scores.unshift({ user: req.user.id, score: req.body.score });
@@ -366,7 +369,7 @@ router.put('/score/:id', auth, async (req, res) => {
 
     await profile.save();
 
-    return res.json(profile.scores);
+    return res.json({ scores: profile.scores, msg: scoreFlag });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -393,6 +396,26 @@ router.get('/score/:id', async (req, res) => {
     if (err.kind == 'ObjectId') {
       return res.status(404).json({ msg: 'Profile not found' });
     }
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   GET api/profile/search/:key
+// @desc    Search Engineer Profile by name
+// @access  Public
+router.get('/search/:key', async (req, res) => {
+  try {
+    const engineers = await Profile.find({
+      user: {
+        $in: await User.find({
+          name: { $regex: req.params.key, $options: 'si' },
+        }).distinct('_id'),
+      },
+    }).populate('user');
+
+    res.status(200).json(engineers);
+  } catch (error) {
+    console.error(error.message);
     res.status(500).send('Server Error');
   }
 });

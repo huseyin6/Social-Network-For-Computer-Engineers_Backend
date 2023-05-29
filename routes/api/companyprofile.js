@@ -151,4 +151,24 @@ router.delete('/', auth, async (req, res) => {
   }
 });
 
+// @route   GET api/companyprofile/search/:key
+// @desc    Search Company Profile by name
+// @access  Public
+router.get('/search/:key', async (req, res) => {
+  try {
+    const companies = await CompanyProfile.find({
+      company: {
+        $in: await Company.find({
+          name: { $regex: req.params.key, $options: 'si' },
+        }).distinct('_id'),
+      },
+    }).populate('company');
+
+    res.status(200).json(companies);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 module.exports = router;

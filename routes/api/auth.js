@@ -63,6 +63,8 @@ function sendVerificationCode(email, code, callback) {
   });
 }
 
+const verificationCodes = {};
+
 // @route   POST api/auth
 // @desc    Authenticate engineer or company & Get token
 // @access  Public
@@ -186,8 +188,6 @@ router.post(
     }
   }
 );
-
-const verificationCodes = {};
 
 function verifyCode(email, code) {
   const storedCode = verificationCodes[email];

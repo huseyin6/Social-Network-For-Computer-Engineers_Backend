@@ -6,6 +6,7 @@ const Profile = require('../../models/Profile');
 const User = require('../../models/User');
 const Post = require('../../models/Post');
 const Question = require('../../models/Question');
+const Job = require('../../models/Job');
 
 const request = require('request');
 const config = require('config');
@@ -168,6 +169,8 @@ router.delete('/', auth, async (req, res) => {
     await Post.deleteMany({ _id: req.user.id });
     // Remove question
     await Question.deleteMany({ _id: req.user.id });
+
+    await Job.updateMany({}, { $pull: { applicants: { user: req.user.id } } });
     res.status(200).json({ msg: 'User deleted' });
   } catch (error) {
     console.error(error.message);

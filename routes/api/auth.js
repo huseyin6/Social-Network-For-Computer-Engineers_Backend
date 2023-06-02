@@ -36,13 +36,14 @@ router.get('/', auth, async (req, res) => {
 
 const mailer = nodemailer.createTransport({
   host: 'smtp.office365.com',
-  port: 587,
-  secure: false,
+  port: 465,
+  secure: true, 
   auth: {
     user: 'ccube.team@outlook.com',
     pass: 'ccubeservice.team.416',
   },
 });
+
 
 function sendVerificationCode(email, code, callback) {
   const mailOptions = {
@@ -54,13 +55,14 @@ function sendVerificationCode(email, code, callback) {
 
   mailer.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.log(error);
+      console.log("Error details:", error);
       callback(error, null);
     } else {
       console.log('Verification code email sent: ' + info.response);
       callback(null, true);
     }
   });
+  
 }
 
 

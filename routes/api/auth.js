@@ -55,13 +55,14 @@ function sendVerificationCode(email, code, callback) {
   mailer.sendMail(mailOptions, (error, info) => {
     if (error) {
       console.log(error);
-      callback(false);
+      callback(error, null);
     } else {
-      console.log('Verification code email sent');
-      callback(true);
+      console.log('Verification code email sent: ' + info.response);
+      callback(null, true);
     }
   });
 }
+
 
 const verificationCodes = {};
 
@@ -105,18 +106,19 @@ router.post(
           charset: 'numeric',
         });
 
-        sendVerificationCode(email, code, function (isSent) {
-          if (isSent) {
+        sendVerificationCode(email, code, function (error, isSent) {
+          if (error) {
+            return res.status(400).json({
+              errors: [{ msg: 'An error occurred while sending the mail: ' + error.message }],
+            });
+          } else if (isSent) {
             verificationCodes[email] = code;
             return res
               .status(200)
               .json({ msg: 'Verification code has just sent!' });
-          } else {
-            return res.status(400).json({
-              errors: [{ msg: 'An error occurred while sending the mail' }],
-            });
           }
         });
+        
 
         // const payloadCompany = {
         //   company: {
@@ -150,18 +152,19 @@ router.post(
           charset: 'numeric',
         });
 
-        sendVerificationCode(email, code, function (isSent) {
-          if (isSent) {
+        sendVerificationCode(email, code, function (error, isSent) {
+          if (error) {
+            return res.status(400).json({
+              errors: [{ msg: 'An error occurred while sending the mail: ' + error.message }],
+            });
+          } else if (isSent) {
             verificationCodes[email] = code;
             return res
               .status(200)
               .json({ msg: 'Verification code has just sent!' });
-          } else {
-            return res.status(400).json({
-              errors: [{ msg: 'An error occurred while sending the mail' }],
-            });
           }
         });
+        
 
         // const payload = {
         //   user: {

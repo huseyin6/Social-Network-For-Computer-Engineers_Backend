@@ -37,7 +37,8 @@ router.get('/', auth, async (req, res) => {
 const mailer = nodemailer.createTransport({
   host: 'smtp.office365.com',
   port: 587,
-  secure: true, 
+  secure: false, // use false for port 587
+  requireTLS: true, // this parameter upgrades the connection using STARTTLS
   auth: {
     user: 'ccube.team@outlook.com',
     pass: 'ccubeservice.team.416',

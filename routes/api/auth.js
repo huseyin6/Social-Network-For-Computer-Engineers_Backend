@@ -205,6 +205,24 @@ function verifyCode(email, code) {
   }
 }
 
+
+// @route   GET api/auth/verificationcode
+// @desc    Get verification code for an email
+// @access  Private
+router.get('/verificationcode', auth, async (req, res) => {
+  const email = req.user.email;
+
+  const code = verificationCodes[email];
+
+  if (!code) {
+    return res.status(404).json({ error: 'Verification code not found for this email' });
+  }
+
+  return res.json({ code });
+});
+
+
+
 // @route   POST api/auth/verify
 // @desc    Authenticate engineer or company & Get token
 // @access  Public

@@ -21,11 +21,13 @@ router.get('/', auth, async (req, res) => {
 
     if (req.user) {
       const user = await User.findById(req.user.id).select('-password');
+      user.currentEmail = user.email; // assuming user object has 'email' field
       return res.json(user);
     } else {
       const company = await Company.findById(req.company.id).select(
         '-password'
       );
+      company.currentEmail = company.email; // assuming company object has 'email' field
       return res.json(company);
     }
   } catch (error) {

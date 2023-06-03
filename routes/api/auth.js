@@ -36,7 +36,7 @@ router.get('/', auth, async (req, res) => {
 
 const mailer = nodemailer.createTransport({
   host: 'smtp.office365.com',
-  port: 465,
+  port: 587,
   secure: true, 
   auth: {
     user: 'ccube.team@outlook.com',

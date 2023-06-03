@@ -13,7 +13,7 @@ const randomstring = require('randomstring');
 const mailer = nodemailer.createTransport({
   host: 'smtp.office365.com',
   port: 587,
-  secure: false,
+  secure: true,
   auth: {
     user: 'ccube.team@outlook.com',
     pass: 'ccubeservice.team.416',

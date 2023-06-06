@@ -56,13 +56,13 @@ router.post(
       location,
       bio,
       status,
-      githubusername,
       skills,
       youtube,
       facebook,
       twitter,
       instagram,
       linkedin,
+      github,
     } = req.body;
 
     const profileFields = {};
@@ -73,7 +73,6 @@ router.post(
     if (location) profileFields.location = location;
     if (bio) profileFields.bio = bio;
     if (status) profileFields.status = status;
-    if (githubusername) profileFields.githubusername = githubusername;
     if (skills) {
       profileFields.skills = skills.split(',').map((skill) => skill.trim());
     }
@@ -90,6 +89,7 @@ router.post(
     if (facebook) profileFields.social.facebook = facebook;
     if (linkedin) profileFields.social.linkedin = linkedin;
     if (instagram) profileFields.social.instagram = instagram;
+    if (github) profileFields.social.github = github;
 
     try {
       let profile = await Profile.findOne({ user: req.user.id });

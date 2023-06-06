@@ -21,13 +21,11 @@ router.get('/', auth, async (req, res) => {
 
     if (req.user) {
       const user = await User.findById(req.user.id).select('-password');
-      user.currentEmail = user.email; // assuming user object has 'email' field
       return res.json(user);
     } else {
       const company = await Company.findById(req.company.id).select(
         '-password'
       );
-      company.currentEmail = company.email; // assuming company object has 'email' field
       return res.json(company);
     }
   } catch (error) {
@@ -39,14 +37,12 @@ router.get('/', auth, async (req, res) => {
 const mailer = nodemailer.createTransport({
   host: 'smtp.office365.com',
   port: 587,
-  secure: false, // use false for port 587
-  requireTLS: true, // this parameter upgrades the connection using STARTTLS
+  secure: false,
   auth: {
     user: 'ccube.team@outlook.com',
     pass: 'ccubeservice.team.416',
   },
 });
-
 
 function sendVerificationCode(email, code, callback) {
   const mailOptions = {
@@ -58,18 +54,14 @@ function sendVerificationCode(email, code, callback) {
 
   mailer.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.log("Error details:", error);
-      callback(error, null);
+      console.log(error);
+      callback(false);
     } else {
-      console.log('Verification code email sent: ' + info.response);
-      callback(null, true);
+      console.log('Verification code email sent');
+      callback(true);
     }
   });
-  
 }
-
-
-const verificationCodes = {};
 
 // @route   POST api/auth
 // @desc    Authenticate engineer or company & Get token
@@ -111,19 +103,18 @@ router.post(
           charset: 'numeric',
         });
 
-        sendVerificationCode(email, code, function (error, isSent) {
-          if (error) {
-            return res.status(400).json({
-              errors: [{ msg: 'An error occurred while sending the mail: ' + error.message }],
-            });
-          } else if (isSent) {
+        sendVerificationCode(email, code, function (isSent) {
+          if (isSent) {
             verificationCodes[email] = code;
             return res
               .status(200)
               .json({ msg: 'Verification code has just sent!' });
+          } else {
+            return res.status(400).json({
+              errors: [{ msg: 'An error occurred while sending the mail' }],
+            });
           }
         });
-        
 
         // const payloadCompany = {
         //   company: {
@@ -157,19 +148,18 @@ router.post(
           charset: 'numeric',
         });
 
-        sendVerificationCode(email, code, function (error, isSent) {
-          if (error) {
-            return res.status(400).json({
-              errors: [{ msg: 'An error occurred while sending the mail: ' + error.message }],
-            });
-          } else if (isSent) {
+        sendVerificationCode(email, code, function (isSent) {
+          if (isSent) {
             verificationCodes[email] = code;
             return res
               .status(200)
               .json({ msg: 'Verification code has just sent!' });
+          } else {
+            return res.status(400).json({
+              errors: [{ msg: 'An error occurred while sending the mail' }],
+            });
           }
         });
-        
 
         // const payload = {
         //   user: {
@@ -197,6 +187,8 @@ router.post(
   }
 );
 
+const verificationCodes = {};
+
 function verifyCode(email, code) {
   const storedCode = verificationCodes[email];
 
@@ -206,24 +198,6 @@ function verifyCode(email, code) {
     return false;
   }
 }
-
-
-// @route   GET api/auth/verificationcode
-// @desc    Get verification code for an email
-// @access  Private
-router.get('/verificationcode', auth, async (req, res) => {
-  const email = req.user.email;
-
-  const code = verificationCodes[email];
-
-  if (!code) {
-    return res.status(404).json({ error: 'Verification code not found for this email' });
-  }
-
-  return res.json({ code });
-});
-
-
 
 // @route   POST api/auth/verify
 // @desc    Authenticate engineer or company & Get token

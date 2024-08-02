@@ -30,7 +30,7 @@ This project is a REST API backend application developed using NodeJS and Expres
 
 1. Clone this repository:
     ```bash
-    git clone https://github.com/username/repository-name.git
+    git clone https://github.com/huseyin6/Social-Network-For-Computer-Engineers_Backend.git
     cd repository-name
     ```
 

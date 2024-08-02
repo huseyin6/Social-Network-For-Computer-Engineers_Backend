@@ -1,4 +1,4 @@
-# NodeJS ExpressJS Backend REST API
+# Social Network for Computer Engineers Backend REST API
 
 ## Project Description
 

@@ -6,16 +6,17 @@ This project is a REST API backend application developed using NodeJS and Expres
 
 ## File and Folder Structure
 
-  ├── config # Application configuration files
-  ├── middleware # Middleware components
-  ├── models # Data models
-  ├── routes
-  │ └── api # API routes
-  ├── .gitignore # Files to be ignored by Git
-  ├── Procfile # Process file for Heroku
-  ├── package.json # Project dependencies and scripts
-  ├── package.zip # Project archive file
-  └── server.js # Application entry file
+    │ 
+    ├── config # Application configuration files
+    ├── middleware # Middleware components
+    ├── models # Data models
+    ├── routes
+    │ └── api # API routes
+    ├── .gitignore # Files to be ignored by Git
+    ├── Procfile # Process file for Heroku
+    ├── package.json # Project dependencies and scripts
+    ├── package.zip # Project archive file
+    └── server.js # Application entry file
 
 
 ## Installation
